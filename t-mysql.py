@@ -1,22 +1,25 @@
-import mysql.connector
+import pymysql.cursors
 
-conn = mysql.conntector.connect(user = 'root', password = 'password', database='test')
-cursor = conn.cursor()
+connection = pymysql.connect(host='localhost',
+                             user='root',
+                             password='123456',
+                             db='test',
+                             charset='utf8mb4',
+                             cursorclass=pymysql.cursors.DictCursor)
 
-# 创建user表
-cursor.execute('CREATE TABLE user (id varchar(20) primary key, name varchar(20)')
-# 插入一行记录
-cursor.execute('INSERT INTO user (id, name) values (%s, %s)', ['1', 'John'])
-cursor.rowcount
+try:
+    with connection.cursor() as cursor:
+        # Create a new record
+        sql = "INSERT INTO `users` (`email`, `password`) VALUES (%s, %s)"
+        cursor.execute(sql, ('1234@gmail.com', '123456'))
+    connection.commit()
 
-# 提交事务
-conn.commit()
-cursor.close()
-# 运行查询
-cursor = conn.cursor()
-cursor.execute('SELECT * FROM user WHERE id = %s', ('1',))
-values = cursor.fetchall()
-values
+    with connection.cursor() as cursor:
+        # Read a single record
+        sql = "SELECT `id`, `password` FROM `users` WHERE `email`=%s"
+        cursor.execute(sql, ('1234@gmail.com',))
+        result = cursor.fetchone()
+        print(result)
 
-cursor.close()
-conn.close()
+finally:
+    connection.close()
